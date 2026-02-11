@@ -2,20 +2,20 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv # 
+from dotenv import load_dotenv
 
-load_dotenv() # Carga las variables del archivo .env 
+# Esto solo cargará el .env si el archivo existe (local)
+# Si no existe (Railway), simplemente no hará nada y pasará a buscar en el sistema
+load_dotenv() 
 
-# Obtiene la URL de la variable de entorno [cite: 82]
+# Buscamos la variable en el entorno del sistema
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+
+# --- SOLUCIÓN AL ERROR ---
+# Añadimos una verificación de seguridad
+if SQLALCHEMY_DATABASE_URL is None:
+    raise ValueError("Error: La variable DATABASE_URL no está configurada en Railway o en el .env")
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
